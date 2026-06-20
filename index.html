@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
           // Ganti dengan konfigurasi Firebase Anda
         const firebaseConfig = {
@@ -45,6 +45,15 @@
                 await createUserWithEmailAndPassword(auth, email, pass);
                 alert("Akun berhasil dibuat! Silakan klik Masuk.");
             } catch (error) { alert("Gagal daftar: " + error.message); }
+        };
+
+        window.resetPassword = async () => {
+            const email = document.getElementById('login-email').value;
+            if (!email) { alert("Masukkan email Anda terlebih dahulu di kolom email."); return; }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Email pemulihan kata sandi telah dikirim ke " + email);
+            } catch (error) { alert("Gagal mengirim email reset: " + error.message); }
         };
 
         window.logout = () => signOut(auth);
@@ -80,6 +89,7 @@
                 <input id="login-pass" type="password" placeholder="Password" class="w-full p-3 rounded-xl border border-slate-200 outline-none focus:border-red-500">
                 <button onclick="login()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition">Masuk</button>
                 <button onclick="register()" class="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition">Daftar Akun Baru</button>
+                 <button onclick="resetPassword()" class="text-sm text-red-600 hover:underline">Lupa Password?</button>
             </div>
         </div>
     </div>
