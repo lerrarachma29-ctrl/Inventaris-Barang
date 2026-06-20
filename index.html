@@ -62,9 +62,7 @@
             if (user) {
                 document.getElementById('login-page').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
-                 onSnapshot(query(collection(db, "users", user.uid, "inventory")), (snap) => {
-                    window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    render();
+                render();
             } else {
                 document.getElementById('app').classList.add('hidden');
                 document.getElementById('login-page').classList.remove('hidden');
