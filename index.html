@@ -10,13 +10,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-        import { getAnalytics, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+   <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, updateDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-          // Ganti dengan konfigurasi Firebase Anda
-       const firebaseConfig = {
-apiKey: "AIzaSyDoIE-vXiF36CrZIWkcazGHcdXJhd1KmY8",
+    // Pastikan konfigurasi firebase sudah benar di sini
+    const firebaseConfig = {
+    apiKey: "AIzaSyDoIE-vXiF36CrZIWkcazGHcdXJhd1KmY8",
     authDomain: "inventaris-barang-11fc2.firebaseapp.com",
     databaseURL: "https://inventaris-barang-11fc2-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "inventaris-barang-11fc2",
@@ -24,12 +25,14 @@ apiKey: "AIzaSyDoIE-vXiF36CrZIWkcazGHcdXJhd1KmY8",
     messagingSenderId: "217265916504",
     appId: "1:217265916504:web:bc5254cde2101084d2182d",
     measurementId: "G-7XKQY5XBTP"
-        };
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const analytics = getAnalytics(app);
 
-        
+    // Sekarang fungsi auth dan db bisa digunakan di seluruh aplikasi Anda
         window.login = async () => {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-pass').value;
