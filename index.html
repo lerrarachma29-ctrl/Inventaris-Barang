@@ -67,11 +67,17 @@ apiKey: "AIzaSyDoIE-vXiF36CrZIWkcazGHcdXJhd1KmY8",
                 onSnapshot(query(collection(db, "users", user.uid, "inventory")), (snap) => {
                     window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 render();
-            }} 
+            }}; 
             else {
                 document.getElementById('app').classList.add('hidden');
                 document.getElementById('login-page').classList.remove('hidden');
             }
+        };
+
+        onSnapshot(query(collection(db, "users", user.uid, "inventory")), (snap) => {
+    console.log("Data dari Firestore:", snap.docs.length, "barang ditemukan");
+    window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    window.render();
         });
     </script>
     
