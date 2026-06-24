@@ -33,14 +33,23 @@
 
     // Fungsi Global agar bisa dipanggil oleh tombol HTML
     window.login = async function() {
-        const email = document.getElementById('email').value;
-        const pass = document.getElementById('password').value;
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-        } catch (e) {
-            alert("Gagal login: " + e.message);
+    const email = document.getElementById('email').value.trim(); // .trim() menghapus spasi tidak sengaja
+    const pass = document.getElementById('password').value.trim();
+    
+    try {
+        await signInWithEmailAndPassword(window.auth, email, pass);
+        // Jika berhasil, halaman akan otomatis dialihkan oleh onAuthStateChanged
+    } catch (e) {
+        console.error("Detail Error:", e); // Cek konsol (F12) untuk melihat pesan detail
+        if (e.code === 'auth/invalid-credential') {
+            alert("Email atau kata sandi salah. Silakan coba lagi.");
+        } else if (e.code === 'auth/user-not-found') {
+            alert("Akun tidak ditemukan. Apakah Anda sudah mendaftar?");
+        } else {
+            alert("Terjadi kesalahan: " + e.message);
         }
-    };
+    }
+};
        
                window.register = async () => {
             const email = document.getElementById('login-email').value;
@@ -95,7 +104,7 @@
             <div class="space-y-4 text-left">
                 <input id="login-email" type="email" placeholder="Email" class="w-full p-3 rounded-xl border border-slate-200 outline-none focus:border-red-500">
                 <input id="login-pass" type="password" placeholder="Password" class="w-full p-3 rounded-xl border border-slate-200 outline-none focus:border-red-500">
-                <button onclick="login()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition">Masuk</button>
+                <button onclick="login()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition">Login</button>
                 <button onclick="register()" class="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition">Daftar Akun Baru</button>
                  <button onclick="resetPassword()" class="text-sm text-red-600 hover:underline">Lupa Password?</button>
             </div>
