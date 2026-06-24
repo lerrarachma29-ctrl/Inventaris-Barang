@@ -59,6 +59,43 @@
 
         window.logout = () => signOut(auth);
 
+        window.tambahBarang = async (nama, stok) => {
+    const user = auth.currentUser;
+    if (!user) return alert("Anda harus login!");
+
+    // Path ini memastikan data hanya masuk ke folder user yang sedang login
+    const path = collection(db, "users", user.uid, "inventory");
+    
+    try {
+        await addDoc(path, {
+            namaBarang: nama,
+            stokBarang: stok,
+            dibuatPada: new Date()
+        });
+        alert("Barang berhasil ditambahkan!");
+    } catch (e) {
+        alert("Gagal: " + e.message);
+    }
+};
+
+        window.muatDataBarang = () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    // Membaca hanya dari "kamar" user yang sedang login
+    const q = query(collection(db, "users", user.uid, "inventory"));
+    
+    onSnapshot(q, (snapshot) => {
+        const listBarang = snapshot.docs.map(doc => ({
+            id: doc.id, 
+            ...doc.data()
+        }));
+        
+        console.log("Data barang saya:", listBarang);
+        // Di sini Anda bisa memanggil fungsi render untuk menampilkan listBarang ke layar
+    });
+};
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('login-page').classList.add('hidden');
