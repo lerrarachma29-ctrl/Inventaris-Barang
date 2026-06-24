@@ -91,56 +91,29 @@
 
     // Membaca hanya dari "kamar" user yang sedang login
     const q = query(collection(db, "users", user.uid, "inventory"));
+        }
     
-    onSnapshot(q, (snapshot) => {
-        const listBarang = snapshot.docs.map(doc => ({
-            id: doc.id, 
-            ...doc.data()
-        }));
-        
-        console.log("Data barang saya:", listBarang);
-
-    // ... (di atas sini sudah ada fungsi login, register, logout) ...
-
-        // TAMBAHKAN FUNGSI RENDER DI SINI:
-        window.render = () => {
-            const tbody = document.getElementById('tabel-barang');
-            if (!tbody) return;
-            
-            tbody.innerHTML = '';
-            window.state.inventory.forEach(item => {
-                tbody.innerHTML += `
-                    <tr class="border-b">
-                        <td class="p-3">${item.nama}</td>
-                        <td class="p-3">${item.stok}</td>
-                    </tr>
-                `;
-            });
-        };
-
         // State & Auth Listener
         window.state = { inventory: [] };
         
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('login-page')?.classList.add('hidden');
-                document.getElementById('app')?.classList.remove('hidden');
-                
-                const q = query(collection(db, "users", user.uid, "inventory"));
-                onSnapshot(q, (snap) => {
-                    window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    
-                    // PANGGIL RENDER DI SINI SETELAH DATA TERBARU DIDAPAT
-                    window.render(); 
-                });
-            } else {
-                document.getElementById('app')?.classList.add('hidden');
-                document.getElementById('login-page')?.classList.remove('hidden');
-            }
+      onAuthStateChanged(auth, (user) => {
+    const loginPage = document.getElementById('login-page');
+    const app = document.getElementById('app');
+
+    if (user) {
+        // Cek apakah elemen ada sebelum memanipulasinya
+        if (loginPage) loginPage.classList.add('hidden');
+        if (app) app.classList.remove('hidden');
+        
+        onSnapshot(query(collection(db, "users", user.uid, "inventory")), (snap) => {
+            window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            window.render();
         });
-        // Di sini Anda bisa memanggil fungsi render untuk menampilkan listBarang ke layar
-    });
-};       
+    } else {
+        if (app) app.classList.add('hidden');
+        if (loginPage) loginPage.classList.remove('hidden');
+    }
+});       
     </script>
     
     <style>
