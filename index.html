@@ -27,10 +27,25 @@
     measurementId: "G-7XKQY5XBTP"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const analytics = getAnalytics(app);
+const app = initializeApp(firebaseConfig);
+    window.auth = getAuth(app);
+    window.db = getFirestore(app);
+    window.onSnapshot = onSnapshot;
+    window.collection = collection;
+    window.query = query;
+
+    onAuthStateChanged(window.auth, (user) => {
+        if (user) {
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            onSnapshot(query(collection(window.db, "users", user.uid, "inventory")), (snap) => {
+                window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                render();
+            });
+        } else {
+            document.getElementById('app').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+        }
 
     // Sekarang fungsi auth dan db bisa digunakan di seluruh aplikasi Anda
         window.login = async () => {
@@ -62,25 +77,6 @@
         };
 
         window.logout = () => signOut(auth);
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('login-page').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-                onSnapshot(query(collection(db, "users", user.uid, "inventory")), (snap) => {
-                    window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                render();
-            }};
-            else {
-                document.getElementById('app').classList.add('hidden');
-                document.getElementById('login-page').classList.remove('hidden');
-            }
-        };
-
-        onSnapshot(query(collection(db, "users", user.uid, "inventory")), (snap) => {
-    console.log("Data dari Firestore:", snap.docs.length, "barang ditemukan");
-    window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    window.render();
         });
     </script>
     
