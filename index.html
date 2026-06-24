@@ -92,35 +92,48 @@
         }));
         
         console.log("Data barang saya:", listBarang);
+
+    // ... (di atas sini sudah ada fungsi login, register, logout) ...
+
+        // TAMBAHKAN FUNGSI RENDER DI SINI:
+        window.render = () => {
+            const tbody = document.getElementById('tabel-barang');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            window.state.inventory.forEach(item => {
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-3">${item.nama}</td>
+                        <td class="p-3">${item.stok}</td>
+                    </tr>
+                `;
+            });
+        };
+
+        // State & Auth Listener
+        window.state = { inventory: [] };
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-page')?.classList.add('hidden');
+                document.getElementById('app')?.classList.remove('hidden');
+                
+                const q = query(collection(db, "users", user.uid, "inventory"));
+                onSnapshot(q, (snap) => {
+                    window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    
+                    // PANGGIL RENDER DI SINI SETELAH DATA TERBARU DIDAPAT
+                    window.render(); 
+                });
+            } else {
+                document.getElementById('app')?.classList.add('hidden');
+                document.getElementById('login-page')?.classList.remove('hidden');
+            }
+        });
         // Di sini Anda bisa memanggil fungsi render untuk menampilkan listBarang ke layar
     });
-};
-
-        // GANTI BAGIAN onAuthStateChanged di kode Anda dengan ini:
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        document.getElementById('login-page').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
-        
-        // PENTING: Gunakan path yang spesifik ke users/{uid}/inventory
-        const q = query(collection(db, "users", user.uid, "inventory"));
-        
-        onSnapshot(q, (snap) => {
-            const tbody = document.getElementById('tabel-barang');
-            tbody.innerHTML = '';
-            snap.forEach(doc => {
-                const d = doc.data();
-                tbody.innerHTML += `<tr><td class="p-2 border">${d.nama}</td><td class="p-2 border">${d.stok}</td></tr>`;
-            });
-        });
-    } else {
-        document.getElementById('app').classList.add('hidden');
-        document.getElementById('login-page').classList.remove('hidden');
-        // Kosongkan tabel saat logout agar tidak terlihat saat user lain login
-        document.getElementById('tabel-barang').innerHTML = '';
-    }
-});
-       
+};       
     </script>
     
     <style>
@@ -169,6 +182,17 @@ onAuthStateChanged(auth, (user) => {
                 </div>
             </header>
             <div id="content-area" class="fade-in"></div>
+            <table class="w-full bg-white shadow rounded">
+                <thead>
+                <tr class="bg-gray-100 text-left">
+                <th class="p-3">Nama Barang</th>
+                <th class="p-3">Stok</th>
+                </tr>
+                </thead>
+            <tbody id="tabel-barang">
+        <!-- Data akan muncul di sini secara otomatis -->
+            </tbody>
+            </table>
         </main>
     </div>
 
