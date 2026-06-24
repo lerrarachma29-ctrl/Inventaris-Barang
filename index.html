@@ -15,50 +15,34 @@
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, updateDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Pastikan konfigurasi firebase sudah benar di sini
+// Pastikan konfigurasi ini di akhir file index.html
     const firebaseConfig = {
-    apiKey: "AIzaSyDoIE-vXiF36CrZIWkcazGHcdXJhd1KmY8",
-    authDomain: "inventaris-barang-11fc2.firebaseapp.com",
-    databaseURL: "https://inventaris-barang-11fc2-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "inventaris-barang-11fc2",
-    storageBucket: "inventaris-barang-11fc2.firebasestorage.app",
-    messagingSenderId: "217265916504",
-    appId: "1:217265916504:web:bc5254cde2101084d2182d",
-    measurementId: "G-7XKQY5XBTP"
+        apiKey: "AIzaSyDoIE-vXiF36CrZIWkcazGHcdXJhd1KmY8",
+        authDomain: "inventaris-barang-11fc2.firebaseapp.com",
+        databaseURL: "https://inventaris-barang-11fc2-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "inventaris-barang-11fc2",
+        storageBucket: "inventaris-barang-11fc2.firebasestorage.app",
+        messagingSenderId: "217265916504",
+        appId: "1:217265916504:web:bc5254cde2101084d2182d",
+        measurementId: "G-7XKQY5XBTP"
     };
 
-const app = initializeApp(firebaseConfig);
-    window.auth = getAuth(app);
-    window.db = getFirestore(app);
-    window.onSnapshot = onSnapshot;
-    window.collection = collection;
-    window.query = query;
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    onAuthStateChanged(window.auth, (user) => {
-        if (user) {
-            document.getElementById('login-page').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
-            onSnapshot(query(collection(window.db, "users", user.uid, "inventory")), (snap) => {
-                window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                render();
-            });
-        } else {
-            document.getElementById('app').classList.add('hidden');
-            document.getElementById('login-page').classList.remove('hidden');
+    // Fungsi Global agar bisa dipanggil oleh tombol HTML
+    window.login = async function() {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } catch (e) {
+            alert("Gagal login: " + e.message);
         }
-
-    // Sekarang fungsi auth dan db bisa digunakan di seluruh aplikasi Anda
-        window.login = async () => {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (error) {
-                alert("Login gagal: " + error.message);
-            }
-        };
-
-        window.register = async () => {
+    };
+       
+               window.register = async () => {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-pass').value;
             try {
@@ -77,8 +61,22 @@ const app = initializeApp(firebaseConfig);
         };
 
         window.logout = () => signOut(auth);
-        });
-    </script>
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            // Logic load data setelah login
+            onSnapshot(query(collection(db, "users", user.uid, "inventory")), (snap) => {
+                window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                render();
+            });
+        } else {
+            document.getElementById('app').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+        }
+    });
+</script>
     
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
