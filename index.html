@@ -96,21 +96,30 @@
     });
 };
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('login-page').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-                
-                // Pastikan listener untuk data inventaris dipanggil di sini
-                onSnapshot(query(collection(db, "users", user.uid, "inventory")), (snap) => {
-                    window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    render();
-                });
-            } else {
-                document.getElementById('app').classList.add('hidden');
-                document.getElementById('login-page').classList.remove('hidden');
-            }
+        // GANTI BAGIAN onAuthStateChanged di kode Anda dengan ini:
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        
+        // PENTING: Gunakan path yang spesifik ke users/{uid}/inventory
+        const q = query(collection(db, "users", user.uid, "inventory"));
+        
+        onSnapshot(q, (snap) => {
+            const tbody = document.getElementById('tabel-barang');
+            tbody.innerHTML = '';
+            snap.forEach(doc => {
+                const d = doc.data();
+                tbody.innerHTML += `<tr><td class="p-2 border">${d.nama}</td><td class="p-2 border">${d.stok}</td></tr>`;
+            });
         });
+    } else {
+        document.getElementById('app').classList.add('hidden');
+        document.getElementById('login-page').classList.remove('hidden');
+        // Kosongkan tabel saat logout agar tidak terlihat saat user lain login
+        document.getElementById('tabel-barang').innerHTML = '';
+    }
+});
        
     </script>
     
