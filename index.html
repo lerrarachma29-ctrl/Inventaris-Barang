@@ -67,7 +67,8 @@ apiKey: "AIzaSyDoIE-vXiF36CrZIWkcazGHcdXJhd1KmY8",
                 onSnapshot(query(collection(db, "users", user.uid, "inventory")), (snap) => {
                     window.state.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 render();
-            }}} else {
+            }} 
+            else {
                 document.getElementById('app').classList.add('hidden');
                 document.getElementById('login-page').classList.remove('hidden');
             }
