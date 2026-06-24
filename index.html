@@ -30,15 +30,21 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        window.login = async () => {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (error) {
-                alert("Login gagal: " + error.message);
-            }
-        };
+       window.login = async () => {
+    console.log("Tombol Masuk ditekan"); // Tambahkan ini
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-pass').value;
+    
+    console.log("Mencoba login dengan:", email); // Tambahkan ini
+    
+    try { 
+        await signInWithEmailAndPassword(auth, email, pass); 
+        console.log("Login berhasil"); // Tambahkan ini
+    } catch (e) { 
+        console.error("Error saat login:", e.message); // Ubah ke console.error
+        alert("Login gagal: " + e.message); 
+    }
+};
 
         window.register = async () => {
             const email = document.getElementById('login-email').value;
