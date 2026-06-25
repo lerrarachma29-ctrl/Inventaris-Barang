@@ -45,7 +45,83 @@
             console.log("Pengguna keluar");
             // Tambahkan logika untuk menampilkan halaman login di sini
         }
-    });
+    })
+        // Ganti fungsi saveProduct Anda dengan ini
+async function saveProduct() {
+    const sku = document.getElementById('form-sku').value;
+    const name = document.getElementById('form-name').value;
+    const category = document.getElementById('form-cat').value;
+    const source = document.getElementById('form-source').value;
+    const image = document.getElementById('img-preview').src.startsWith('data') ? document.getElementById('img-preview').src : '';
+    const quantity = parseInt(document.getElementById('form-qty').value);
+    const minStock = parseInt(document.getElementById('form-min').value);
+
+    try {
+        if (state.editingId) {
+            // Update data yang ada
+            await updateDoc(doc(db, "users", auth.currentUser.uid, "inventory", state.editingId), {
+                sku, name, category, source, image, quantity, minStock
+            });
+        } else {
+            // Tambah data baru
+            await addDoc(collection(db, "users", auth.currentUser.uid, "inventory"), {
+                sku, name, category, source, image, quantity, minStock
+            });
+        }
+        closeModal();
+    } catch (e) { alert("Gagal menyimpan: " + e.message); }
+}
+
+// Ganti fungsi deleteProduct dengan ini
+async function deleteProduct(id) { 
+    try {
+        await deleteDoc(doc(db, "users", auth.currentUser.uid, "inventory", id));
+        closeModal();
+    } catch (e) { alert("Gagal menghapus: " + e.message); }
+}
+
+// Ganti fungsi saveTransaction dengan ini
+async function saveTransaction() {
+    const name = document.getElementById('trans-product-input').value;
+    const qty = parseInt(document.getElementById('trans-qty').value);
+    const date = document.getElementById('trans-date').value;
+    const note = document.getElementById('trans-note').value;
+    const category = document.getElementById('trans-cat-input').value;
+    const image = document.getElementById('trans-img-data').value;
+    
+    if (!name || !qty || !date) return;
+
+    try {
+        // Simpan transaksi
+        await addDoc(collection(db, "users", auth.currentUser.uid, "transactions"), {
+            productName: name, category, type: state.transactionType, qty, note, date, image
+        });
+
+        // Update stok produk
+        const product = state.inventory.find(i => i.name === name);
+        if (product) {
+            const newQty = state.transactionType === 'MASUK' ? product.quantity + qty : Math.max(0, product.quantity - qty);
+            await updateDoc(doc(db, "users", auth.currentUser.uid, "inventory", product.id), { quantity: newQty });
+        }
+        alert("Transaksi berhasil!");
+    } catch (e) { alert("Gagal: " + e.message); }
+}
+// Tambahkan fungsi ini di script Anda
+async function hapusAkun() {
+    if (confirm("Yakin ingin menghapus akun dan SEMUA data inventaris Anda?")) {
+        try {
+            const user = auth.currentUser;
+            // 1. Hapus data di Firestore (opsional, tapi disarankan untuk kebersihan)
+            // Anda harus menghapus dokumen di koleksi inventory dan transactions user tersebut
+            
+            // 2. Hapus Akun Firebase Auth
+            await user.delete();
+            alert("Akun berhasil dihapus.");
+        } catch (e) {
+            alert("Harap login ulang untuk menghapus akun.");
+        }
+    }
+};
 </script>
     
     <style>
