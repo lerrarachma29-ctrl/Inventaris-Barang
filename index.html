@@ -87,7 +87,16 @@
                 document.getElementById('login-page').classList.remove('hidden');
                 document.getElementById('app').classList.add('hidden');
             }
-};
+        }
+// ... (semua fungsi firebase Anda di atas sini)
+
+// PASTI KAN BAGIAN INI ADA DI PALING BAWAH SCRIPT MODULE
+window.login = login;
+window.register = register;
+window.saveProduct = saveProduct;
+window.deleteProduct = deleteProduct;
+window.logout = logout;
+// Tambahkan fungsi lain yang dipanggil oleh onclick di HTML Anda;
 </script>
     
     <style>
