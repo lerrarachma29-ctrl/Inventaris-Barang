@@ -30,96 +30,63 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    window.login = (email, pass) => signInWithEmailAndPassword(auth, email, pass);
-    window.register = (email, pass) => createUserWithEmailAndPassword(auth, email, pass);
-    window.resetPassword = (email) => sendPasswordResetEmail(auth, email);
-    window.logout = () => signOut(auth);
-    
-    // Listener untuk memantau status login
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            console.log("Pengguna login:", user.email);
-            // Tambahkan logika untuk menampilkan dasbor di sini
-        } else {
-            console.log("Pengguna keluar");
-            // Tambahkan logika untuk menampilkan halaman login di sini
-        }
-    })
-        // Ganti fungsi saveProduct Anda dengan ini
-async function saveProduct() {
-    const sku = document.getElementById('form-sku').value;
-    const name = document.getElementById('form-name').value;
-    const category = document.getElementById('form-cat').value;
-    const source = document.getElementById('form-source').value;
-    const image = document.getElementById('img-preview').src.startsWith('data') ? document.getElementById('img-preview').src : '';
-    const quantity = parseInt(document.getElementById('form-qty').value);
-    const minStock = parseInt(document.getElementById('form-min').value);
+// --- FUNGSI UTAMA (Eksport ke Window agar tombol HTML bisa memanggilnya) ---
+        window.login = async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert(e.message); }
+        };
+        window.register = async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            try { await createUserWithEmailAndPassword(auth, email, pass); } catch (e) { alert(e.message); }
+        };
+        window.resetPassword = async () => {
+            const email = document.getElementById('email').value;
+            try { await sendPasswordResetEmail(auth, email); alert("Email reset terkirim!"); } catch (e) { alert(e.message); }
+        };
+        window.logout = () => signOut(auth);
 
-    try {
-        if (state.editingId) {
-            // Update data yang ada
-            await updateDoc(doc(db, "users", auth.currentUser.uid, "inventory", state.editingId), {
-                sku, name, category, source, image, quantity, minStock
-            });
-        } else {
-            // Tambah data baru
-            await addDoc(collection(db, "users", auth.currentUser.uid, "inventory"), {
-                sku, name, category, source, image, quantity, minStock
-            });
-        }
-        closeModal();
-    } catch (e) { alert("Gagal menyimpan: " + e.message); }
-}
+        window.saveProduct = async () => {
+            const sku = document.getElementById('form-sku').value;
+            const name = document.getElementById('form-name').value;
+            const category = document.getElementById('form-cat').value;
+            const source = document.getElementById('form-source').value;
+            const image = document.getElementById('img-preview').src.startsWith('data') ? document.getElementById('img-preview').src : '';
+            const quantity = parseInt(document.getElementById('form-qty').value);
+            const minStock = parseInt(document.getElementById('form-min').value);
 
-// Ganti fungsi deleteProduct dengan ini
-async function deleteProduct(id) { 
-    try {
-        await deleteDoc(doc(db, "users", auth.currentUser.uid, "inventory", id));
-        closeModal();
-    } catch (e) { alert("Gagal menghapus: " + e.message); }
-}
+            try {
+                if (window.editingId) {
+                    await updateDoc(doc(db, "users", auth.currentUser.uid, "inventory", window.editingId), { sku, name, category, source, image, quantity, minStock });
+                } else {
+                    await addDoc(collection(db, "users", auth.currentUser.uid, "inventory"), { sku, name, category, source, image, quantity, minStock });
+                }
+                closeModal();
+            } catch (e) { alert("Gagal menyimpan: " + e.message); }
+        };
 
-// Ganti fungsi saveTransaction dengan ini
-async function saveTransaction() {
-    const name = document.getElementById('trans-product-input').value;
-    const qty = parseInt(document.getElementById('trans-qty').value);
-    const date = document.getElementById('trans-date').value;
-    const note = document.getElementById('trans-note').value;
-    const category = document.getElementById('trans-cat-input').value;
-    const image = document.getElementById('trans-img-data').value;
-    
-    if (!name || !qty || !date) return;
+        window.deleteProduct = async (id) => { 
+            try {
+                await deleteDoc(doc(db, "users", auth.currentUser.uid, "inventory", id));
+                closeModal();
+            } catch (e) { alert("Gagal menghapus: " + e.message); }
+        };
 
-    try {
-        // Simpan transaksi
-        await addDoc(collection(db, "users", auth.currentUser.uid, "transactions"), {
-            productName: name, category, type: state.transactionType, qty, note, date, image
-        });
+        // Fungsi bantu agar template tetap berjalan
+        window.closeModal = () => document.getElementById('modal-container').innerHTML = '';
+        window.setActiveTab = (tab) => { window.activeTab = tab; render(); };
+        window.setTransactionType = (type) => { window.transactionType = type; render(); };
 
-        // Update stok produk
-        const product = state.inventory.find(i => i.name === name);
-        if (product) {
-            const newQty = state.transactionType === 'MASUK' ? product.quantity + qty : Math.max(0, product.quantity - qty);
-            await updateDoc(doc(db, "users", auth.currentUser.uid, "inventory", product.id), { quantity: newQty });
-        }
-        alert("Transaksi berhasil!");
-    } catch (e) { alert("Gagal: " + e.message); }
-}
-// Tambahkan fungsi ini di script Anda
-async function hapusAkun() {
-    if (confirm("Yakin ingin menghapus akun dan SEMUA data inventaris Anda?")) {
-        try {
-            const user = auth.currentUser;
-            // 1. Hapus data di Firestore (opsional, tapi disarankan untuk kebersihan)
-            // Anda harus menghapus dokumen di koleksi inventory dan transactions user tersebut
-            
-            // 2. Hapus Akun Firebase Auth
-            await user.delete();
-            alert("Akun berhasil dihapus.");
-        } catch (e) {
-            alert("Harap login ulang untuk menghapus akun.");
-        }
-    }
+        // Listener Status Login
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+            } else {
+                document.getElementById('login-page').classList.remove('hidden');
+                document.getElementById('app').classList.add('hidden');
+            }
 };
 </script>
     
@@ -350,28 +317,6 @@ async function hapusAkun() {
             }
         }
         function closeModal() { document.getElementById('modal-container').innerHTML = ''; }
-        function saveProduct() {
-            const sku = document.getElementById('form-sku').value;
-            const name = document.getElementById('form-name').value;
-            const category = document.getElementById('form-cat').value;
-            const source = document.getElementById('form-source').value;
-            const image = document.getElementById('img-preview').src.startsWith('data') ? document.getElementById('img-preview').src : '';
-            const quantity = parseInt(document.getElementById('form-qty').value);
-            const minStock = parseInt(document.getElementById('form-min').value);
-            if (state.editingId) {
-                const p = state.inventory.find(i => i.id === state.editingId);
-                Object.assign(p, { sku, name, category, source, image, quantity, minStock });
-            } else {
-                state.inventory.push({ id: Date.now(), sku, name, category, source, image, quantity, minStock });
-            }
-            closeModal();
-            render();
-        }
-        function deleteProduct(id) { 
-            state.inventory = state.inventory.filter(p => p.id !== id); 
-            closeModal();
-            render(); 
-        }
         
         function renderRingkasan(container) {
             const totalStock = state.inventory.reduce((a,b)=>a+b.quantity, 0);
@@ -623,22 +568,6 @@ async function hapusAkun() {
             const product = state.inventory.find(i => i.name === name);
             if (product) display.innerHTML = `Stok: <span class="font-bold text-white">${product.quantity}</span>`;
             else display.innerText = "Stok: -";
-        }
-        function saveTransaction() {
-            const name = document.getElementById('trans-product-input').value;
-            const qty = parseInt(document.getElementById('trans-qty').value);
-            const date = document.getElementById('trans-date').value;
-            const note = document.getElementById('trans-note').value;
-            const category = document.getElementById('trans-cat-input').value;
-            const image = document.getElementById('trans-img-data').value;
-            if (!name || !qty || !date) return;
-            const product = state.inventory.find(i => i.name === name);
-            if (product) {
-                if (state.transactionType === 'MASUK') product.quantity += qty;
-                else product.quantity = Math.max(0, product.quantity - qty);
-            }
-            state.transactions.unshift({ id: Date.now(), productName: name, category, type: state.transactionType, qty, note, date, image });
-            render();
         }
 
         function renderPengaturan(container) {
