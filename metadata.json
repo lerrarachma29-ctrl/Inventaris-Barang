@@ -1,6 +1,0 @@
-{
-  "name": "StokSimpel",
-  "description": "Sistem Manajemen Stok Multi-Unit dengan Login Email",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
